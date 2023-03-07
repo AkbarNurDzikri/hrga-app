@@ -173,40 +173,87 @@
 	<!-- main bootstrap -->
 	<script src="<?= BASEURL; ?>/assets/js/bootstrap.js"></script>
 	<!--signature_pad -->
-	<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+	<script src="<?= BASEURL ?>/assets/signature_pad-4.1.5/dist/signature_pad.umd.min.js"></script>
 	<!-- sweet alerts -->
 	<script src="<?= BASEURL ?>/assets/package/dist/sweetalert2.min.js"></script>
 	<!-- my scripts -->
 	<script>
 		const canvas = document.querySelector('canvas');
-		const signaturePad = new SignaturePad(canvas);
+		const signaturePad = new SignaturePad(canvas, {
+      backgroundColor: 'rgb(255, 255, 255)',
+      penColor: 'blue'
+    });
 
 		const storeData = () => {
-			let formData = 'tgl_kunjungan=' + document.getElementById('tgl_kunjungan').value + '&nama=' + document.getElementById('nama').value + '&nama_perusahaan=' + document.getElementById('nama_perusahaan').value + '&alamat_perusahaan=' + document.getElementById('alamat_perusahaan').value + '&personel_bfi=' + document.getElementById('personel_bfi').value + '&tujuan_kunjungan=' + document.getElementById('tujuan_kunjungan').value + '&dengan_janji=' + document.getElementById('dengan_janji').value + '&kendaraan=' + document.getElementById('kendaraan').value + '&nomor_kendaraan=' + document.getElementById('nomor_kendaraan').value + '&signatured=' + JSON.stringify({signatured: signaturePad.toSVG()});
+			const tgl_kunjungan = document.getElementById('tgl_kunjungan');
+			const nama = document.getElementById('nama');
+			const nama_perusahaan = document.getElementById('nama_perusahaan');
+			const alamat_perusahaan = document.getElementById('alamat_perusahaan');
+			const personel_bfi = document.getElementById('personel_bfi');
+			const tujuan_kunjungan = document.getElementById('tujuan_kunjungan');
+			const dengan_janji = document.getElementById('dengan_janji');
+			const kendaraan = document.getElementById('kendaraan');
+			const nomor_kendaraan = document.getElementById('nomor_kendaraan');
+			let date = new Date();
+			let hari = date.getDay();
+			let tgl = date.getDate();
+			let bulan = date.getMonth();
+			let tahun = date.getFullYear();
+			let jam = date.getHours();
+			let menit = date.getMinutes();
+
+			switch(hari) {
+				case 0 : hari = 'Minggu'; break;
+				case 1 : hari = 'Senin'; break;
+				case 2 : hari = 'Selasa'; break;
+				case 3 : hari = 'Rabu'; break;
+				case 4 : hari = 'Kamis'; break;
+				case 5 : hari = 'Jum\'at'; break;
+				case 6 : hari = 'Sabtu'; break;
+			}
+
+			switch(bulan) {
+				case 0 : bulan = 'Januari'; break;
+				case 1 : bulan = 'Februari'; break;
+				case 2 : bulan = 'Maret'; break;
+				case 3 : bulan = 'April'; break;
+				case 4 : bulan = 'Mei'; break;
+				case 5 : bulan = 'Juni'; break;
+				case 6 : bulan = 'Juli'; break;
+				case 7 : bulan = 'Agustus'; break;
+				case 8 : bulan = 'September'; break;
+				case 9 : bulan = 'Oktober'; break;
+				case 10 : bulan = 'November'; break;
+				case 11 : bulan = 'Desember'; break;
+			}
+
+			let timeStamp = hari + ', ' + tgl + '-' + bulan + '-' + tahun + ' ' + jam + ':' + menit + ' WIB';
+
+			let formData = 'tgl_kunjungan=' + tgl_kunjungan.value + '&nama=' + nama.value + '&nama_perusahaan=' + nama_perusahaan.value + '&alamat_perusahaan=' + alamat_perusahaan.value + '&personel_bfi=' + personel_bfi.value + '&tujuan_kunjungan=' + tujuan_kunjungan.value + '&dengan_janji=' + dengan_janji.value + '&kendaraan=' + kendaraan.value + '&nomor_kendaraan=' + nomor_kendaraan.value + '&signatured=' + signaturePad.toDataURL();
 
 			let request = new XMLHttpRequest();
 			request.open('POST', '<?= BASEURL ?>/guest/store');
 			request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 			request.onreadystatechange = () => {
-					if(request.readyState == 4 && request.status == 200) {
-						let results = request.responseText;
-                        if(results == 'success') {
-                              Swal.fire({
-                                  icon: 'success',
-                                  title: 'Berhasil mengisi daftar tamu',
-                                  text: 'Terimakasih telah mengikuti prosedur di PT. Blasfolie Internasional Indonesia. Tunjukkan pesan ini kepada security yang bertugas ...',
-                                  showConfirmButton: true
-                              });
-                          } else {
-                              Swal.fire({
-                                  icon: 'error',
-                                  title: 'Terjadi kesalahan',
-                                  text: 'Silahkan ulangi lagi. Jika masih terulang, informasikan kepada Security yang bertugas',
-                                  showConfirmButton: true
-                              });
-                          }
+				if(request.readyState == 4 && request.status == 200) {
+					let results = request.responseText;
+					if(results == 'success') {
 						
+							Swal.fire({
+									icon: 'success',
+									title: 'Berhasil mengisi daftar tamu',
+									html: '[ ' + timeStamp + ' ] <br> Dear Bapak/Ibu <b>' + nama.value +'</b>, <br> Terimakasih telah bersedia mengikuti prosedur. <br> Ikuti selalu panduan keselamatan selama Anda berada di area PT. Blasolie Internasional Indonesia. <br><br> Selanjutnya, mohon tunjukkan pesan ini kepada security yang bertugas. <br> Terimakasih ...',
+									showConfirmButton: true
+							});
+					} else {
+							Swal.fire({
+									icon: 'error',
+									title: 'Terjadi kesalahan',
+									text: 'Silahkan ulangi lagi. Jika masih terulang, informasikan kepada Security yang bertugas',
+									showConfirmButton: true
+							});
 					}
+				}
 			};
 			request.send(formData);
 		};

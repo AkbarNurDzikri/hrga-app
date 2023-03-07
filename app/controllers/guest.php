@@ -13,14 +13,15 @@ class Guest extends Controller
 
 	public function store()
 	{
-		// $data = json_decode(file_get_contents('php://input'));
-		$data = json_decode($_POST['signatured']);
-		$image = $data->signatured;
-		$time = time();
-		file_put_contents("assets/img/guest-signatured/signature-$time.svg", $image);
+		$data_uri = $_POST['signatured'];
+		$encoded_image = explode(",", $data_uri)[1];
+		$encoded_image = str_replace(' ', '+', $encoded_image);
+		$decoded_image = base64_decode($encoded_image);
+		
 
 		$execute  = $this->model('guest_model')->store($_POST);
 		if($execute > 0) {
+			file_put_contents('assets/img/guest-signatured/' . 'signature-' . time() . '.png', $decoded_image);
 			echo 'success';
 		} else {
 			echo 'failed';
